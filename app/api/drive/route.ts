@@ -14,18 +14,37 @@ export async function GET(req: NextRequest) {
   const drive = google.drive({ version: "v3", auth });
 
   try {
-    const response = await drive.files.list({
-      q: `'${folderId}' in parents and trashed = false`,
-      fields: "files(id, name, mimeType, thumbnailLink, webContentLink, webViewLink)",
-      orderBy: "folder, name",
-      pageSize: 50,
-    });
+    let allFiles: any[] = [];
+    let pageToken: string | undefined = undefined;
 
-    const files = response.data.files || [];
+    // --- ループ処理で全件取得 ---
+    do {
+      const response: any = await drive.files.list({
+        q: `'${folderId}' in parents and trashed = false`,
+        // 一度の取得件数を最大(1000)に設定してリクエスト回数を減らす
+        pageSize: 1000, 
+        fields: "nextPageToken, files(id, name, mimeType, thumbnailLink, webContentLink, webViewLink)",
+        orderBy: "folder, name",
+        pageToken: pageToken,
+      });
 
-    // フォルダのプレビュー画像を並列で取得する
+      if (response.data.files) {
+        allFiles = [...allFiles, ...response.data.files];
+      }
+      
+      // 次のページがある場合はトークンが返ってくる。なければ undefined になる
+      pageToken = response.data.nextPageToken;
+
+      // セキュリティ上の配慮：あまりにもファイルが多い場合（例：3000件以上）
+      // タイムアウトを避けるため、ここで打ち切る設定も可能です
+      if (allFiles.length > 3000) break; 
+
+    } while (pageToken);
+
+    // --- フォルダのプレビュー取得（並列処理） ---
+    // ※注意：フォルダ数が多いとここが重くなります。上位20フォルダ程度に絞るのも手です
     const filesWithPreviews = await Promise.all(
-      files.map(async (file) => {
+      allFiles.map(async (file) => {
         if (file.mimeType !== "application/vnd.google-apps.folder") return file;
         try {
           const childRes = await drive.files.list({
@@ -42,6 +61,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(filesWithPreviews);
   } catch (error) {
+    console.error("API Error:", error);
     return NextResponse.json({ error: "API Error" }, { status: 500 });
   }
 }
