@@ -1,0 +1,47 @@
+import { google } from "googleapis";
+import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(req: NextRequest) {
+  const token = await getToken({ req });
+  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { searchParams } = new URL(req.url);
+  const folderId = searchParams.get("folderId") || "root";
+
+  const auth = new google.auth.OAuth2();
+  auth.setCredentials({ access_token: token.accessToken as string });
+  const drive = google.drive({ version: "v3", auth });
+
+  try {
+    const response = await drive.files.list({
+      q: `'${folderId}' in parents and trashed = false`,
+      fields: "files(id, name, mimeType, thumbnailLink, webContentLink, webViewLink)",
+      orderBy: "folder, name",
+      pageSize: 50,
+    });
+
+    const files = response.data.files || [];
+
+    // フォルダのプレビュー画像を並列で取得する
+    const filesWithPreviews = await Promise.all(
+      files.map(async (file) => {
+        if (file.mimeType !== "application/vnd.google-apps.folder") return file;
+        try {
+          const childRes = await drive.files.list({
+            q: `'${file.id}' in parents and mimeType contains 'image/' and trashed = false`,
+            fields: "files(thumbnailLink)",
+            pageSize: 1,
+          });
+          return { ...file, folderPreview: childRes.data.files?.[0]?.thumbnailLink || null };
+        } catch {
+          return file;
+        }
+      })
+    );
+
+    return NextResponse.json(filesWithPreviews);
+  } catch (error) {
+    return NextResponse.json({ error: "API Error" }, { status: 500 });
+  }
+}
