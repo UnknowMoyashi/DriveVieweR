@@ -67,7 +67,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         <header className="flex justify-between items-center mb-8 bg-gray-900/50 p-4 rounded-xl backdrop-blur-md sticky top-0 z-10 border border-gray-800">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-blue-400">My Album</h1>
+            <h1 className="text-xl font-bold text-blue-400">画像保管庫</h1>
             {currentFolderId !== "root" && (
               <button onClick={handleBack} className="bg-gray-800 hover:bg-gray-700 px-4 py-1 rounded-lg text-sm transition">
                 ← 戻る
@@ -92,8 +92,8 @@ export default function Home() {
               const isVideo = file.mimeType.startsWith("video/");
               
               // サムネイルとフォルダプレビューのURL調整
-              const thumbUrl = file.thumbnailLink?.replace("=s220", "=s400");
-              const folderThumbUrl = file.folderPreview?.replace("=s220", "=s400");
+              const thumbUrl = file.thumbnailLink?.replace("=s220", "=s128");
+              const folderThumbUrl = file.folderPreview?.replace("=s220", "=s128");
 
               return (
                 <div 
@@ -107,7 +107,7 @@ export default function Home() {
                         {folderThumbUrl ? (
                           <div className="relative w-full h-full p-2">
                             <div className="absolute top-3 left-3 z-10 text-3xl drop-shadow-lg">📂</div>
-                            <img src={folderThumbUrl} alt="" className="w-full h-full object-cover rounded-xl opacity-60 group-hover:opacity-100 transition duration-300" />
+                            <img src={folderThumbUrl} alt="" loading="lazy"  className="w-full h-full object-cover rounded-xl opacity-60 group-hover:opacity-100 transition duration-300" />
                           </div>
                         ) : (
                           <div className="text-6xl group-hover:scale-110 transition duration-300">📂</div>

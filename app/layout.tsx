@@ -6,8 +6,8 @@ import { NextAuthProvider } from "@/components/NextAuthProvider"; // 先ほど�
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "My Drive Album",
-  description: "Google Driveをアルバム化",
+  title: "Drive VieweR",
+  description: "GoogleDriveを見やすく",
 };
 
 export default function RootLayout({
