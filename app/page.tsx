@@ -53,8 +53,8 @@ export default function Home() {
   if (!session) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-950 text-white text-center p-4">
-        <h1 className="text-4xl font-bold mb-4">My Drive Album</h1>
-        <p className="text-gray-400 mb-8">Googleドライブをアルバム化して閲覧</p>
+        <h1 className="text-4xl font-bold mb-4">Drive VieweR</h1>
+        <p className="text-gray-400 mb-8">Googleドライブを見やすくするやつ</p>
         <button onClick={() => signIn("google")} className="bg-blue-600 px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 transition transform hover:scale-105">
           Googleアカウントでログイン
         </button>
@@ -141,7 +141,7 @@ export default function Home() {
 
         {!loading && files.length === 0 && (
           <div className="text-center py-40 text-gray-600 italic">
-            このフォルダには表示できるアイテムがありません
+            このフォルダには表示できるアイテムがないよ
           </div>
         )}
       </div>
@@ -157,7 +157,7 @@ export default function Home() {
               <iframe src={selectedFile.webViewLink?.replace("/view", "/preview")} className="w-full aspect-video rounded-2xl shadow-2xl border border-gray-800" allow="autoplay" />
             ) : (
               <div className="text-center bg-gray-900 p-12 rounded-3xl border border-gray-800">
-                <p className="mb-8 text-xl">プレビューできません</p>
+                <p className="mb-8 text-xl">プレビューできないよ</p>
                 <a href={selectedFile.webContentLink} className="bg-blue-600 px-8 py-3 rounded-full font-bold hover:bg-blue-700 transition">ダウンロード</a>
               </div>
             )}
